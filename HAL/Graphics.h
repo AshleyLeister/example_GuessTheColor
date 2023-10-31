@@ -40,4 +40,7 @@ void GFX_drawHollowCircle(GFX* gfx_p, int x, int y, int radius);
 void GFX_removeSolidCircle(GFX* gfx_p, int x, int y, int radius);
 void GFX_removeHollowCircle(GFX* gfx_p, int x, int y, int radius);
 
+void GFX_drawHollowRectangle(GFX *gfx, int x, int y, int width, int height);
+void GFX_removeHollowRectangle(GFX *gfx, int x, int y, int width, int height);
+
 #endif /* HAL_GRAPHICS_H_ */
