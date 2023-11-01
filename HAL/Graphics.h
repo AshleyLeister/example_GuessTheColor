@@ -5,6 +5,7 @@
  *      Author: Matthew Zhong
  */
 
+
 #ifndef HAL_GRAPHICS_H_
 #define HAL_GRAPHICS_H_
 
@@ -14,6 +15,7 @@
 
 #define FG_COLOR GRAPHICS_COLOR_WHITE
 #define BG_COLOR GRAPHICS_COLOR_BLACK
+
 
 struct _GFX
 {
@@ -43,4 +45,9 @@ void GFX_removeHollowCircle(GFX* gfx_p, int x, int y, int radius);
 void GFX_drawHollowRectangle(GFX *gfx, int x, int y, int width, int height);
 void GFX_removeHollowRectangle(GFX *gfx, int x, int y, int width, int height);
 
+void draw_Base(Graphics_Context *g_sContext_p);
+void MoveCircle(Graphics_Context *g_sContext_p, bool moveToLeft, bool moveToRight);
+void InitGraphics(Graphics_Context *g_sContext_p);
+void drawXY(Graphics_Context *g_sContext_p, unsigned int x, unsigned int y);
 #endif /* HAL_GRAPHICS_H_ */
+

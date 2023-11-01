@@ -12,7 +12,7 @@
 #include <HAL/LED.h>
 #include <HAL/Timer.h>
 #include <HAL/Graphics.h>
-
+#include <ti/grlib/grlib.h>
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
 /**============================================================================
@@ -38,8 +38,13 @@ struct _HAL
     // Buttons - Boosterpack S1, S2, and JS (press down on the joystick)
     Button boosterpackS1;
     Button boosterpackS2;
-
+    Button boosterpackJS;
     // Graphics - LCD control
+
+    // UART - Construct a new UART instance
+
+
+
     GFX gfx;
 };
 typedef struct _HAL HAL;

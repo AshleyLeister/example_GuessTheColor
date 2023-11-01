@@ -26,7 +26,7 @@ HAL HAL_construct()
     // Initialize all Buttons by calling their constructors with correctly-defined arguments.
     hal.boosterpackS1 = Button_construct(BOOSTERPACK_S1_PORT, BOOSTERPACK_S1_PIN);  // Boosterpack S1
     hal.boosterpackS2 = Button_construct(BOOSTERPACK_S2_PORT, BOOSTERPACK_S2_PIN);  // Boosterpack S2
-
+    hal.boosterpackJS = Button_construct(BOOSTERPACK_JS_PORT, BOOSTERPACK_JS_PIN);  // Boosterpack JS
     // Initialize the LCD by calling its constructor with user-defined foreground and background colors.
     hal.gfx = GFX_construct(GRAPHICS_COLOR_WHITE, GRAPHICS_COLOR_BLACK);
 
@@ -48,4 +48,5 @@ void HAL_refresh(HAL* hal_p)
     // Refresh Boosterpack buttons
     Button_refresh(&hal_p->boosterpackS1);
     Button_refresh(&hal_p->boosterpackS2);
+    Button_refresh(&hal_p->boosterpackJS);
 }

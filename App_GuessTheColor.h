@@ -8,12 +8,18 @@
 #ifndef APP_GUESSTHECOLOR_H_
 #define APP_GUESSTHECOLOR_H_
 
+#include <HAL/LcdDriver/Crystalfontz128x128_ST7735.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+
+
+
+#include <ti/grlib/grlib.h>
 #include <HAL/HAL.h>
 #include <HAL/Graphics.h>
 #include <HAL/Timer.h>
 
-#define TITLE_SCREEN_WAIT   3000  //3 seconds
-#define RESULT_SCREEN_WAIT  3000  // 3 seconds
+#define TITLE_SCREEN_WAIT   2000  //3 seconds
+#define RESULT_SCREEN_WAIT  4000  // 3 seconds
 
 #define NUM_TEST_OPTIONS    4
 #define NUM_RANDOM_NUMBERS  5
@@ -64,13 +70,15 @@ void App_GuessTheColor_handleTitleScreen(App_GuessTheColor* app, HAL* hal);
 void App_GuessTheColor_handleInstructionsScreen(App_GuessTheColor* app, HAL* hal_p);
 void App_GuessTheColor_handleGameScreen(App_GuessTheColor* app, HAL* hal_p);
 void App_GuessTheColor_handleResultScreen(App_GuessTheColor* app, HAL* hal_p);
-
+void App_GuessTheColor_handleScoreScreen(App_GuessTheColor* app_p, HAL* hal_p);
+void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p);
 // Helper functions which clear the screen and draw the text for each state
 void App_GuessTheColor_showTitleScreen(GFX* gfx_p);
 void App_GuessTheColor_showInstructionsScreen(App_GuessTheColor* app_p, GFX* gfx_p);
 void App_GuessTheColor_showGameScreen(App_GuessTheColor* app_p, GFX* gfx_p);
 void App_GuessTheColor_showResultScreen(App_GuessTheColor* app_p, HAL* hal_p);
-
+void App_GuessTheColor_showScoreScreen(App_GuessTheColor* app_p, GFX* gfx_p);
+void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p);
 // Helper function which reduces the number of redraws required when moving the
 // cursor.
 void App_GuessTheColor_updateGameScreen(App_GuessTheColor* app_p, GFX* gfx_p);
