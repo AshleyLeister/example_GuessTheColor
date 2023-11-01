@@ -10,6 +10,7 @@
 
 
 
+
 #define LEFT_THRESHOLD  1500
 #define TOP_THRESHOLD  1500
 #define RIGHT_THRESHOLD  10000
@@ -397,26 +398,28 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
     // check the inputs
         // If B2 is pressed, increment the cursor and circle it around to 0 if it
         // reaches the bottom
-        if (Button_isTapped(&hal_p->boosterpackS1))//if BB1 is pressed go to game menu
-           {
-               // Update internal logical state
-               app_p->state = RESULT_SCREEN;
 
-               // Turn on LEDs based off of the lowest three bits of a random number.
-               uint32_t randomNumber = app_p->randomNumbers[app_p->randomNumberChoice];
 
-               if (randomNumber & BIT0) { LED_turnOn(&hal_p->boosterpackRed  ); }
-               if (randomNumber & BIT1) { LED_turnOn(&hal_p->boosterpackGreen); }
-               if (randomNumber & BIT2) { LED_turnOn(&hal_p->boosterpackBlue ); }
+                            if (Button_isTapped(&hal_p->boosterpackS1))//if BB1 is pressed go to game menu
+                                {
+                                    // Update internal logical state
+                                    app_p->state = GAME_SCREEN;
 
-               // Increment the random number choice with a mod loopback to 0 when reaching
-               // NUM_RANDOM_NUMBERS.
-               app_p->randomNumberChoice = (app_p->randomNumberChoice + 1) % NUM_RANDOM_NUMBERS;
+                                    // Turn on LEDs based off of the lowest three bits of a random number.
+                                    uint32_t randomNumber = app_p->randomNumbers[app_p->randomNumberChoice];
 
-               // Display the next state's screen to the user
-               App_GuessTheColor_showResultScreen(app_p, hal_p);
+                                    if (randomNumber & BIT0) { LED_turnOn(&hal_p->boosterpackRed  ); }
+                                    if (randomNumber & BIT1) { LED_turnOn(&hal_p->boosterpackGreen); }
+                                    if (randomNumber & BIT2) { LED_turnOn(&hal_p->boosterpackBlue ); }
 
-    }
+                                    // Increment the random number choice with a mod loopback to 0 when reaching
+                                    // NUM_RANDOM_NUMBERS.
+                                    app_p->randomNumberChoice = (app_p->randomNumberChoice + 1) % NUM_RANDOM_NUMBERS;
+
+                                    // Display the next state's screen to the user
+                                    App_GuessTheColor_showGameScreen(app_p,&hal_p->gfx);
+                                }
+
 }
 
 /**
@@ -502,44 +505,45 @@ void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p)
     if (app_p->blueSelected ) { GFX_print(gfx_p, "*", 4, 8); }
 
 
+
     Graphics_Context g_sContext;
 
-      initialize();
-      InitGraphics(&g_sContext);
-      draw_Base(&g_sContext);
+         initialize();
+         InitGraphics(&g_sContext);
+         draw_Base(&g_sContext);
 
-      unsigned vx, vy;
+         unsigned vx, vy;
 
-      while (1)
-          {
 
-              getSampleJoyStick(&vx, &vy);
-              bool joyStickPushedtoRight = false;
-              bool joyStickPushedtoUp = false;
-              bool joyStickPushedtoDown = false;
-              bool joyStickPushedtoLeft = false;
-              drawXY(&g_sContext, vx, vy);
+                 getSampleJoyStick(&vx, &vy);
+                 bool joyStickPushedtoRight = false;
+                 bool joyStickPushedtoUp = false;
+                 bool joyStickPushedtoDown = false;
+                 bool joyStickPushedtoLeft = false;
+                 drawXY(&g_sContext, vx, vy);
 
-              if (vx < LEFT_THRESHOLD)
-              {
-                  joyStickPushedtoLeft = true;
-              }
-              if (vy < TOP_THRESHOLD)
-              {
-                  joyStickPushedtoUp = true;
-              }
-              if (vx < RIGHT_THRESHOLD)
-              {
-              joyStickPushedtoRight = true;
-              }
-              if (vy < BOTTOM_THRESHOLD)
-                          {
-                          joyStickPushedtoDown = true;
-                          }
-              MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight);
+                 if (vx < LEFT_THRESHOLD)
+                 {
+                     joyStickPushedtoLeft = true;
+                 }
+                 if (vy < TOP_THRESHOLD)
+                 {
+                     joyStickPushedtoUp = true;
+                 }
+                 if (vx < RIGHT_THRESHOLD)
+                 {
+                 joyStickPushedtoRight = true;
+                 }
+                 if (vy < BOTTOM_THRESHOLD)
+                 {
+                 joyStickPushedtoDown = true;
+                 }
+                 MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight);
 
-              MoveCircle(&g_sContext, joyStickPushedtoUp,joyStickPushedtoDown);
-           }// check the inputs
+                 MoveCircle(&g_sContext, joyStickPushedtoUp,joyStickPushedtoDown);
+
+
+
 
 }
 void App_GuessTheColor_showGameScreen(App_GuessTheColor* app_p, GFX* gfx_p)
