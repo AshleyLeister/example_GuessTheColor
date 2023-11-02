@@ -79,25 +79,32 @@ void make_3digit_NumString(unsigned int num, char *string)
 }
 
 
-void MoveCircle(Graphics_Context *g_sContext_p, bool moveToLeft, bool moveToRight)
+void MoveCircle(Graphics_Context *g_sContext_p, bool moveToLeft, bool moveToRight, bool moveToDown, bool moveToUp)
 {
     static unsigned int x = 63;
+    static unsigned int y = 63;
+
     static unsigned int moveCount = 0;
     char string[4];
 
-    if ((moveToLeft && (x>20)) || (moveToRight && (x<110)))
+    if ((moveToLeft && (x>20)) || (moveToRight && (x<110))||(moveToDown && (y>40)) || (moveToUp && (y<90)))
     {
 
         Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
-        Graphics_fillCircle(g_sContext_p, x, 63, 10);
+        Graphics_fillCircle(g_sContext_p, x, y, 10);
 
         if (moveToLeft)
             x = x-10;
-        else
+        if(moveToRight)
             x = x+10;
 
+        if (moveToDown)
+           y = y+10;
+        if(moveToUp)
+           y = y-10;
+
         Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_YELLOW);
-        Graphics_fillCircle(g_sContext_p, x, 63, 10);
+        Graphics_fillCircle(g_sContext_p, x, y, 10);
 
         moveCount++;
         make_3digit_NumString(moveCount, string);

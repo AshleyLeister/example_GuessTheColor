@@ -46,7 +46,7 @@ void GFX_drawHollowRectangle(GFX *gfx, int x, int y, int width, int height);
 void GFX_removeHollowRectangle(GFX *gfx, int x, int y, int width, int height);
 
 void draw_Base(Graphics_Context *g_sContext_p);
-void MoveCircle(Graphics_Context *g_sContext_p, bool moveToLeft, bool moveToRight);
+void MoveCircle(Graphics_Context *g_sContext_p, bool moveToLeft, bool moveToRight,bool moveToUp, bool moveToDown);
 void InitGraphics(Graphics_Context *g_sContext_p);
 void drawXY(Graphics_Context *g_sContext_p, unsigned int x, unsigned int y);
 #endif /* HAL_GRAPHICS_H_ */

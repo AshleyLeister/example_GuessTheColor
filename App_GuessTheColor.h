@@ -78,7 +78,7 @@ void App_GuessTheColor_showInstructionsScreen(App_GuessTheColor* app_p, GFX* gfx
 void App_GuessTheColor_showGameScreen(App_GuessTheColor* app_p, GFX* gfx_p);
 void App_GuessTheColor_showResultScreen(App_GuessTheColor* app_p, HAL* hal_p);
 void App_GuessTheColor_showScoreScreen(App_GuessTheColor* app_p, GFX* gfx_p);
-void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p);
+void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p,HAL* hal_p);
 // Helper function which reduces the number of redraws required when moving the
 // cursor.
 void App_GuessTheColor_updateGameScreen(App_GuessTheColor* app_p, GFX* gfx_p);

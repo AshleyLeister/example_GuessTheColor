@@ -12,9 +12,9 @@
 
 
 #define LEFT_THRESHOLD  1500
-#define TOP_THRESHOLD  1500
-#define RIGHT_THRESHOLD  10000
-#define BOTTOM_THRESHOLD  1600
+#define RIGHT_THRESHOLD  12000
+#define UP_THRESHOLD  12000
+#define DOWN_THRESHOLD  1500
 
 /* HAL and Application includes */
 #include <HAL/HAL.h>
@@ -78,6 +78,7 @@ int main(void)
 
     }
 }
+
 void initialize()
 {
     // stop the watchdog timer
@@ -102,7 +103,7 @@ void initADC() {
     // This configures the ADC to store output results
     // in ADC_MEM0 for joystick X.
     // Todo: if we want to add joystick Y, then, we have to use more memory locations
-    ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM0, true);
+    ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM1, true);//made to use memory locations mem0 to mem1
 
     // This configures the ADC in manual conversion mode
     // Software will start each conversion.
@@ -130,6 +131,11 @@ void initJoyStick() {
                                   ADC_INPUT_A15,                 // joystick X
                                   ADC_NONDIFFERENTIAL_INPUTS);
 
+    ADC14_configureConversionMemory(ADC_MEM1,
+                                     ADC_VREFPOS_AVCC_VREFNEG_VSS,
+                                     ADC_INPUT_A9,                 // joystick Y
+                                     ADC_NONDIFFERENTIAL_INPUTS);
+
     // This selects the GPIO as analog input
     // A15 is multiplexed on GPIO port P6 pin PIN0
     // TODO: which one of GPIO_PRIMARY_MODULE_FUNCTION, or
@@ -142,12 +148,9 @@ void initJoyStick() {
 
     // TODO: add joystick Y
     GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P4,
-                                                 GPIO_PIN4,
-                                                 GPIO_TERTIARY_MODULE_FUNCTION);
-    ADC14_configureConversionMemory(ADC_MEM0,
-                                      ADC_VREFPOS_AVCC_VREFNEG_VSS,
-                                      ADC_INPUT_A9,                 // joystick Y
-                                      ADC_NONDIFFERENTIAL_INPUTS);
+                                               GPIO_PIN4,
+                                               GPIO_TERTIARY_MODULE_FUNCTION);
+
 
 }
 
@@ -156,7 +159,7 @@ void getSampleJoyStick(unsigned *X, unsigned *Y) {
     *X = ADC14_getResult(ADC_MEM0);
 
     // TODO: Read the Y channel
-    *Y=ADC14_getResult(ADC_MEM0);
+    *Y = ADC14_getResult(ADC_MEM1);
 }
 
 
@@ -360,7 +363,7 @@ void App_GuessTheColor_handleGameScreen(App_GuessTheColor* app_p, HAL* hal_p)
 
                 App_GuessTheColor_updateGameScreen(app_p, &hal_p->gfx);
                 app_p->state = PLAY_SCREEN;
-                App_GuessTheColor_showPlayScreen(app_p, &hal_p->gfx);
+                App_GuessTheColor_showPlayScreen(app_p, &hal_p->gfx,hal_p);
                 break;
 
             case CURSOR_1: // Green choice
@@ -400,25 +403,51 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
         // reaches the bottom
 
 
-                            if (Button_isTapped(&hal_p->boosterpackS1))//if BB1 is pressed go to game menu
-                                {
-                                    // Update internal logical state
-                                    app_p->state = GAME_SCREEN;
 
-                                    // Turn on LEDs based off of the lowest three bits of a random number.
-                                    uint32_t randomNumber = app_p->randomNumbers[app_p->randomNumberChoice];
 
-                                    if (randomNumber & BIT0) { LED_turnOn(&hal_p->boosterpackRed  ); }
-                                    if (randomNumber & BIT1) { LED_turnOn(&hal_p->boosterpackGreen); }
-                                    if (randomNumber & BIT2) { LED_turnOn(&hal_p->boosterpackBlue ); }
+        Graphics_Context g_sContext;
 
-                                    // Increment the random number choice with a mod loopback to 0 when reaching
-                                    // NUM_RANDOM_NUMBERS.
-                                    app_p->randomNumberChoice = (app_p->randomNumberChoice + 1) % NUM_RANDOM_NUMBERS;
+        initialize();
+        InitGraphics(&g_sContext);
+        draw_Base(&g_sContext);
 
-                                    // Display the next state's screen to the user
-                                    App_GuessTheColor_showGameScreen(app_p,&hal_p->gfx);
-                                }
+        unsigned vx, vy;
+
+        while (1)
+        {
+
+            getSampleJoyStick(&vx, &vy);
+            bool joyStickPushedtoRight = false;
+            bool joyStickPushedtoLeft = false;
+            bool joyStickPushedtoUp = false;//added these
+            bool joyStickPushedtoDown = false;
+
+            drawXY(&g_sContext, vx, vy);
+
+            if (vx < LEFT_THRESHOLD)
+            {
+                joyStickPushedtoLeft = true;
+            }
+            if (vx > RIGHT_THRESHOLD)//added this for right threshold
+                  {
+                      joyStickPushedtoRight = true;
+                  }
+            if (vy > UP_THRESHOLD)
+                    {
+                        joyStickPushedtoUp = true;
+                    }
+            if (vy < DOWN_THRESHOLD)//added this for right threshold
+              {
+               joyStickPushedtoDown = true;
+              }
+
+
+
+            MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoDown,joyStickPushedtoUp);
+
+         }
+
+
 
 }
 
@@ -485,7 +514,7 @@ void App_GuessTheColor_showInstructionsScreen(App_GuessTheColor* app_p, GFX* gfx
  * each color and its selection, intended for use when setting up the
  * GAME_SCREEN state.
  */
-void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p)
+void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p,HAL* hal_p)
 {
     // Clear the screen from any old text state
     GFX_clear(gfx_p);
@@ -506,43 +535,6 @@ void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p)
 
 
 
-    Graphics_Context g_sContext;
-
-         initialize();
-         InitGraphics(&g_sContext);
-         draw_Base(&g_sContext);
-
-         unsigned vx, vy;
-
-
-                 getSampleJoyStick(&vx, &vy);
-                 bool joyStickPushedtoRight = false;
-                 bool joyStickPushedtoUp = false;
-                 bool joyStickPushedtoDown = false;
-                 bool joyStickPushedtoLeft = false;
-                 drawXY(&g_sContext, vx, vy);
-
-                 if (vx < LEFT_THRESHOLD)
-                 {
-                     joyStickPushedtoLeft = true;
-                 }
-                 if (vy < TOP_THRESHOLD)
-                 {
-                     joyStickPushedtoUp = true;
-                 }
-                 if (vx < RIGHT_THRESHOLD)
-                 {
-                 joyStickPushedtoRight = true;
-                 }
-                 if (vy < BOTTOM_THRESHOLD)
-                 {
-                 joyStickPushedtoDown = true;
-                 }
-                 MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight);
-
-                 MoveCircle(&g_sContext, joyStickPushedtoUp,joyStickPushedtoDown);
-
-
 
 
 }
@@ -557,7 +549,7 @@ void App_GuessTheColor_showGameScreen(App_GuessTheColor* app_p, GFX* gfx_p)
     GFX_print(gfx_p, "  Play Game                ", 2, 0);
     GFX_print(gfx_p, "  How to Play              ", 3, 0);
     GFX_print(gfx_p, "  High Scores               ", 4, 0);
-    GFX_print(gfx_p, "  End Guessing       ", 5, 0);
+    GFX_print(gfx_p, "  Game Over      ", 5, 0);
 
     GFX_print(gfx_p, "B1: Select choice    ", 7, 0);
     GFX_print(gfx_p, "B2: Move arrow       ", 8, 0);
