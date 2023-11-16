@@ -9,6 +9,7 @@
 #define HAL_HAL_H_
 
 #include <HAL/Button.h>
+#include <HAL/Joystick.h>
 #include <HAL/LED.h>
 #include <HAL/Timer.h>
 #include <HAL/Graphics.h>
@@ -40,7 +41,7 @@ struct _HAL
     Button boosterpackS2;
     Button boosterpackJS;
     // Graphics - LCD control
-
+Joystick joystick;
     // UART - Construct a new UART instance
 
 

@@ -26,7 +26,7 @@
 
 enum _GameState
 {
-    TITLE_SCREEN, INSTRUCTIONS_SCREEN, GAME_SCREEN, RESULT_SCREEN,SCORE_SCREEN,PLAY_SCREEN
+    TITLE_SCREEN, INSTRUCTIONS_SCREEN, MENU_SCREEN, RESULT_SCREEN,SCORE_SCREEN,PLAY_SCREEN
 };
 typedef enum _GameState GameState;
 
@@ -57,8 +57,27 @@ struct _App_GuessTheColor
     // List of predetermined random numbers
     int randomNumbers[NUM_RANDOM_NUMBERS];
     int randomNumberChoice;
+    ////////////////////////////////////////////////added these from HW10
+    GFX gfx;  //gfx stands for grahics!!!
+
+    unsigned int frameIndex;
+    unsigned int frameOffset;
+
+    unsigned int frameIndexx;
+     unsigned int frameOffsetx;
+
+
+     unsigned int frameIndexf;//index for flowers
+     unsigned int frameOffsetf;
+
+
+    SWTimer Launchpad_LED2_blinkingTimer;
 };
+
+
 typedef struct _App_GuessTheColor App_GuessTheColor;
+
+
 
 // Boilerplate constructor function for the Application
 App_GuessTheColor App_GuessTheColor_construct(HAL* hal_p);
@@ -81,9 +100,13 @@ void App_GuessTheColor_showScoreScreen(App_GuessTheColor* app_p, GFX* gfx_p);
 void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p,HAL* hal_p);
 // Helper function which reduces the number of redraws required when moving the
 // cursor.
+
+
+
 void App_GuessTheColor_updateGameScreen(App_GuessTheColor* app_p, GFX* gfx_p);
 
 // Used to reset the internal game variables
 void App_GuessTheColor_initGameVariables(App_GuessTheColor* app_p, HAL* hal_p);
+
 
 #endif /* APP_GUESSTHECOLOR_H_ */

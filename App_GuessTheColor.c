@@ -8,13 +8,11 @@
 #include <stdio.h>
 
 
-
-
-
 #define LEFT_THRESHOLD  1500
 #define RIGHT_THRESHOLD  12000
 #define UP_THRESHOLD  12000
 #define DOWN_THRESHOLD  1500
+
 
 /* HAL and Application includes */
 #include <HAL/HAL.h>
@@ -58,6 +56,7 @@ int main(void)
     // Initialize the main Application object and the HAL.
     HAL hal = HAL_construct();
     App_GuessTheColor app = App_GuessTheColor_construct(&hal);
+
     App_GuessTheColor_showTitleScreen(&hal.gfx);
 
     // Main super-loop! In a polling architecture, this function should call
@@ -68,14 +67,7 @@ int main(void)
     {
         App_GuessTheColor_loop(&app, &hal);  //update my program, application state, output
         HAL_refresh(&hal);
-
-
         Graphics_Context g_sContext;
-
-
-
-
-
     }
 }
 
@@ -91,68 +83,6 @@ void initialize()
 
 
 // Initializing the ADC which resides on SoC
-void initADC() {
-    ADC14_enableModule();
-
-    ADC14_initModule(ADC_CLOCKSOURCE_SYSOSC,
-                     ADC_PREDIVIDER_1,
-                     ADC_DIVIDER_1,
-                      0
-                     );
-
-    // This configures the ADC to store output results
-    // in ADC_MEM0 for joystick X.
-    // Todo: if we want to add joystick Y, then, we have to use more memory locations
-    ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM1, true);//made to use memory locations mem0 to mem1
-
-    // This configures the ADC in manual conversion mode
-    // Software will start each conversion.
-    ADC14_enableSampleTimer(ADC_AUTOMATIC_ITERATION);
-}
-
-
-void startADC() {
-   // Starts the ADC with the first conversion
-   // in repeat-mode, subsequent conversions run automatically
-   ADC14_enableConversion();
-   ADC14_toggleConversionTrigger();
-}
-
-
-// Interfacing the Joystick with ADC (making the proper connections in software)
-void initJoyStick() {
-
-    // This configures ADC_MEM0 to store the result from
-    // input channel A15 (Joystick X), in non-differential input mode
-    // (non-differential means: only a single input pin)
-    // The reference for Vref- and Vref+ are VSS and VCC respectively
-    ADC14_configureConversionMemory(ADC_MEM0,
-                                  ADC_VREFPOS_AVCC_VREFNEG_VSS,
-                                  ADC_INPUT_A15,                 // joystick X
-                                  ADC_NONDIFFERENTIAL_INPUTS);
-
-    ADC14_configureConversionMemory(ADC_MEM1,
-                                     ADC_VREFPOS_AVCC_VREFNEG_VSS,
-                                     ADC_INPUT_A9,                 // joystick Y
-                                     ADC_NONDIFFERENTIAL_INPUTS);
-
-    // This selects the GPIO as analog input
-    // A15 is multiplexed on GPIO port P6 pin PIN0
-    // TODO: which one of GPIO_PRIMARY_MODULE_FUNCTION, or
-    //                    GPIO_SECONDARY_MODULE_FUNCTION, or
-    //                    GPIO_TERTIARY_MODULE_FUNCTION
-    // should be used in place of 0 as the last argument?
-    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P6,
-                                               GPIO_PIN0,
-                                               GPIO_TERTIARY_MODULE_FUNCTION);
-
-    // TODO: add joystick Y
-    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P4,
-                                               GPIO_PIN4,
-                                               GPIO_TERTIARY_MODULE_FUNCTION);
-
-
-}
 
 void getSampleJoyStick(unsigned *X, unsigned *Y) {
     // ADC runs in continuous mode, we just read the conversion buffers
@@ -201,8 +131,19 @@ App_GuessTheColor App_GuessTheColor_construct(HAL* hal_p)
  * single infinite loop in main. In this way, we can model a polling system of
  * FSMs. Every cycle of this loop function, we poll each of the FSMs one time.
  */
+unsigned colormix (unsigned r, unsigned g, unsigned b){
+return((r&0xff)<<16)|((g&0xff)<<8)|(b& 0xff);
+}
+
 void App_GuessTheColor_loop(App_GuessTheColor* app_p, HAL* hal_p)
 {
+
+if (Joystick_isTappedToLeft(&hal_p->joystick))
+LED_toggle(&hal_p->boosterpackBlue);
+
+//(hal_p->joystick.x<3000)
+ //   LED_turnOn(&hal_p->boosterpackGreen)
+
     switch (app_p->state)
     {
         case TITLE_SCREEN:
@@ -213,7 +154,7 @@ void App_GuessTheColor_loop(App_GuessTheColor* app_p, HAL* hal_p)
             App_GuessTheColor_handleInstructionsScreen(app_p, hal_p);
             break;
 
-        case GAME_SCREEN:
+        case MENU_SCREEN:
             App_GuessTheColor_handleGameScreen(app_p, hal_p);
             break;
 
@@ -278,7 +219,7 @@ void App_GuessTheColor_handleTitleScreen(App_GuessTheColor* app_p, HAL* hal_p)
 {
     if (SWTimer_expired(&app_p->timer))
     {
-        app_p->state = GAME_SCREEN;
+        app_p->state = MENU_SCREEN;
         App_GuessTheColor_showGameScreen(app_p, &hal_p->gfx);
 
     }
@@ -292,10 +233,10 @@ void App_GuessTheColor_handleTitleScreen(App_GuessTheColor* app_p, HAL* hal_p)
 void App_GuessTheColor_handleInstructionsScreen(App_GuessTheColor* app_p, HAL* hal_p)
 {
     // Transition to start the game when B2 is pressed
-    if (Button_isTapped(&hal_p->boosterpackJS))//if joystick button pressed REPLACE WITH
+    if (Button_isTapped(&hal_p->boosterpackJS))//if joystick button pressed go to menu screen
     {
         // Update internal logical state
-        app_p->state = GAME_SCREEN;
+        app_p->state = MENU_SCREEN;
 
         // Turn on LEDs based off of the lowest three bits of a random number.
         uint32_t randomNumber = app_p->randomNumbers[app_p->randomNumberChoice];
@@ -315,10 +256,10 @@ void App_GuessTheColor_handleInstructionsScreen(App_GuessTheColor* app_p, HAL* h
 void App_GuessTheColor_handleScoreScreen(App_GuessTheColor* app_p, HAL* hal_p)
 {
     // Transition to start the game when B2 is pressed
-    if (Button_isTapped(&hal_p->boosterpackJS))//if joystick button pressed REPLACE WITH
+    if (Button_isTapped(&hal_p->boosterpackJS))//if joystick button pressed go to menu
     {
         // Update internal logical state
-        app_p->state = GAME_SCREEN;
+        app_p->state = MENU_SCREEN;
 
         // Turn on LEDs based off of the lowest three bits of a random number.
         uint32_t randomNumber = app_p->randomNumbers[app_p->randomNumberChoice];
@@ -336,7 +277,7 @@ void App_GuessTheColor_handleScoreScreen(App_GuessTheColor* app_p, HAL* hal_p)
     }
 }
 /**
- * Callback function for when the game is in the GAME_SCREEN state. Used to
+ * Callback function for when the game is in the MENU_SCREEN state. Used to
  * break down the main App_GuessTheColors_loop() function into smaller
  * sub-functions.
  */
@@ -345,11 +286,14 @@ void App_GuessTheColor_handleGameScreen(App_GuessTheColor* app_p, HAL* hal_p)
 // check the inputs
     // If B2 is pressed, increment the cursor and circle it around to 0 if it
     // reaches the bottom
-    if (Button_isTapped(&hal_p->boosterpackS2)) {
+    if (Joystick_isTappedToDown(&hal_p->joystick)) {
             app_p->cursor = (Cursor) (((int) app_p->cursor + 1) % NUM_TEST_OPTIONS);
             App_GuessTheColor_updateGameScreen(app_p, &hal_p->gfx);
         }
-
+    if (Joystick_isTappedToUp(&hal_p->joystick)) {
+              app_p->cursor = (Cursor) (((int) app_p->cursor - 1) % NUM_TEST_OPTIONS);
+              App_GuessTheColor_updateGameScreen(app_p, &hal_p->gfx);
+          }
     // If B1 is pressed, either add a selection to the proper color choice OR
     // transition to the SHOW_RESULT state if the user chooses to end the test.
     if (Button_isTapped(&hal_p->boosterpackJS))
@@ -402,52 +346,208 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
         // If B2 is pressed, increment the cursor and circle it around to 0 if it
         // reaches the bottom
 
-
-
-
+while (1){
         Graphics_Context g_sContext;
 
-        initialize();
-        InitGraphics(&g_sContext);
-        draw_Base(&g_sContext);
+            // using static variable
+            static bool pause = false;
+            unsigned int r, g, b;
+            unsigned vx, vy;
 
-        unsigned vx, vy;
 
-        while (1)
-        {
+            getSampleJoyStick(&vx, &vy);//gets x and y values of joystick
+            drawXY(&g_sContext, vx, vy);//draws the x and y values of the joystick
 
-            getSampleJoyStick(&vx, &vy);
-            bool joyStickPushedtoRight = false;
-            bool joyStickPushedtoLeft = false;
-            bool joyStickPushedtoUp = false;//added these
-            bool joyStickPushedtoDown = false;
 
-            drawXY(&g_sContext, vx, vy);
+                r = 25;
+                g = app_p->frameIndex*2;
+                b = 254 - g;
 
-            if (vx < LEFT_THRESHOLD)
-            {
-                joyStickPushedtoLeft = true;
-            }
-            if (vx > RIGHT_THRESHOLD)//added this for right threshold
+                static int count3 = 9;
+                unsigned char lifeString[6];
+
+              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
+              Graphics_fillCircle(&g_sContext,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//wipe previous flower circles drawn
+
+                //Graphics_setForegroundColor(&g_sContext,colormix(r,g,b));
+
+              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
+              Graphics_fillCircle(&g_sContext,  20, (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
+
+              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
+              Graphics_fillCircle(&g_sContext,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);//wipe previous pollen+flower circles
+
+              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
+              Graphics_fillCircle(&g_sContext,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);//wipe previous pollen+flower circles
+               //  Graphics_setForegroundColor(&g_sContext,colormix(r,g,b));
+
+                app_p->frameIndex++;//adds one to frame index
+                app_p->frameIndexx++;
+                app_p->frameIndexf++;
+
+
+
+                if (app_p->frameIndex==90)//pollen index
+                {
+                    app_p->frameIndex = 0;
+                    app_p->frameOffset++;
+
+                    if (app_p->frameOffset==90)
+                        app_p->frameOffset = 60;
+
+
+
+
+
+                }
+
+                if (app_p->frameIndexx==90)//index for flower with pollen
+                {
+                    app_p->frameIndexx = 0;
+                    app_p->frameOffsetx++;
+
+                    if (app_p->frameOffsetx==90)
+                        app_p->frameOffsetx = 40;
+
+
+
+
+
+                }
+                if (app_p->frameIndexf==90)//index for flower
+                     {
+                         app_p->frameIndexf = 0;
+                         app_p->frameOffsetf++;
+
+                         if (app_p->frameOffsetf==90)
+                             app_p->frameOffsetf = 20;
+
+
+
+                         snprintf((char *) lifeString, 10, "life %d",count3--);
+                         GFX_print(&g_sContext, (char*) lifeString, 13, 11);
+
+
+                     }
+
+
+
+
+                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_PINK );
+                Graphics_fillCircle(&g_sContext,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//flower
+
+                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_GREEN );
+                Graphics_fillCircle(&g_sContext,  20, (app_p->frameIndex + app_p->frameOffset)%90, 2);//pollen
+
+
+                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_PINK);//flower and pollen
+                Graphics_fillCircle(&g_sContext,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);
+                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_GREEN );//flower and pollen
+                Graphics_fillCircle(&g_sContext,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);
+                ///////////////////////////////////////////// joystick controls
+
+                bool joyStickPushedtoRight = false;////boolean for each type of joystick position
+                bool joyStickPushedtoLeft = false;
+                bool joyStickPushedtoUp = false;
+                bool joyStickPushedtoDown = false;
+
+
+                if (vx < LEFT_THRESHOLD)//if joystick reaches threshold pushed to left turns true
+                {
+                    joyStickPushedtoLeft = true;
+                }
+
+                if (vx > RIGHT_THRESHOLD)////if joystick reaches threshold pushed to right turns true
+                      {
+                          joyStickPushedtoRight = true;
+                      }
+
+                if (vy > UP_THRESHOLD)///if joystick reaches threshold pushed to Up turns true
+                        {
+                            joyStickPushedtoUp = true;
+                        }
+
+                if (vy < DOWN_THRESHOLD)///if joystick reaches threshold pushed to down turns true
                   {
-                      joyStickPushedtoRight = true;
+                   joyStickPushedtoDown = true;
                   }
-            if (vy > UP_THRESHOLD)
-                    {
-                        joyStickPushedtoUp = true;
-                    }
-            if (vy < DOWN_THRESHOLD)//added this for right threshold
-              {
-               joyStickPushedtoDown = true;
-              }
+
+              /// MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoDown,joyStickPushedtoUp,&app);//old circle is removed and new circle is drawn
+         ////////////////////////////////////move circle code this section causes application loop to end??????
+                static unsigned int x = 63;
+                static unsigned int y = 63;
+
+                static unsigned int moveCount = 0;
+                static unsigned int pollenCount = 0;
 
 
 
-            MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoDown,joyStickPushedtoUp);
 
-         }
+                char string[4];
+
+                if ((joyStickPushedtoLeft && (x>20)) || (joyStickPushedtoRight && (x<110))||(joyStickPushedtoDown && (y<75)) || (joyStickPushedtoUp && (y>45)))
+                {
+
+                    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_BLUE);
+
+                    Graphics_fillCircle(&g_sContext, x, y, 10);//get rid of previous circle
+
+                    if (joyStickPushedtoLeft)//if boolean movetoleft is true
+                        x = x-10;
+
+                    if(joyStickPushedtoRight)//if boolean movetoright is true
+                        x = x+10;
+
+                    if (joyStickPushedtoDown)//if boolean movetodown is true
+                       y = y+10;
+
+                    if(joyStickPushedtoUp)//if boolean movetoup is true
+                       y = y-10;
+
+                    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_YELLOW);//draw new circle in new location
+                    Graphics_fillCircle(&g_sContext, x, y, 10);//draw new circle in new location
+
+                    moveCount++;
+                    static int count1 = 0;//displays moves done
+                    unsigned char MoveString[6];
 
 
+
+
+
+                    snprintf((char *) MoveString, 10, "Moves %d",count1++);
+                                     GFX_print(&g_sContext, (char*) MoveString, 12, 11);
+
+                }
+                static int score = 0;//displays moves done
+                                             unsigned char ScoreString[6];
+                                             static int count2 = 0;//displays moves done
+                                                                              unsigned char PollenString[8];
+                    if (((app_p->frameIndex + app_p->frameOffset)>=y) && ((x<25) && (x>20)))//if bee touches pollen
+
+
+                        snprintf((char *) PollenString, 10, "Pollen %d",count2++);
+                         GFX_print(&g_sContext, (char*) PollenString, 14, 11);
+
+
+
+
+                    if (((app_p->frameIndexx + app_p->frameOffsetx)>=y) && ((x<105) && (x>95)))//if bee touches flowers with pollen
+
+
+                               snprintf((char *) ScoreString, 10, "Score %d",score++);
+                                GFX_print(&g_sContext, (char*) ScoreString, 15, 11);
+
+
+                                if (((app_p->frameIndexf + app_p->frameOffsetf)>=y) && ((x<75) && (x>68)))//if bee touches flowers with no pollen
+
+
+                                            snprintf((char *) PollenString, 10, "Pollen %d",count2--);//subtract 1 from pollen score
+                                             GFX_print(&g_sContext, (char*) PollenString, 14, 11);
+
+
+
+}
 
 }
 
@@ -463,7 +563,7 @@ void App_GuessTheColor_handleResultScreen(App_GuessTheColor* app_p, HAL* hal_p)
     if (SWTimer_expired(&app_p->timer))
       {
 
-          app_p->state = GAME_SCREEN;
+          app_p->state = MENU_SCREEN;
           App_GuessTheColor_initGameVariables(app_p, hal_p);
           App_GuessTheColor_showGameScreen(app_p, &hal_p->gfx);
 
@@ -512,7 +612,7 @@ void App_GuessTheColor_showInstructionsScreen(App_GuessTheColor* app_p, GFX* gfx
 /**
  * A helper function which clears the screen and draws an updated display of
  * each color and its selection, intended for use when setting up the
- * GAME_SCREEN state.
+ * MENU_SCREEN state.
  */
 void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p,HAL* hal_p)
 {
@@ -537,6 +637,7 @@ void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p,HAL* 
 
 
 
+
 }
 void App_GuessTheColor_showGameScreen(App_GuessTheColor* app_p, GFX* gfx_p)
 {
@@ -551,7 +652,7 @@ void App_GuessTheColor_showGameScreen(App_GuessTheColor* app_p, GFX* gfx_p)
     GFX_print(gfx_p, "  High Scores               ", 4, 0);
     GFX_print(gfx_p, "  Game Over      ", 5, 0);
 
-    GFX_print(gfx_p, "B1: Select choice    ", 7, 0);
+    GFX_print(gfx_p, "JS: Select choice    ", 7, 0);
     GFX_print(gfx_p, "B2: Move arrow       ", 8, 0);
 
     // Draw the cursor
