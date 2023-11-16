@@ -382,36 +382,38 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
 
         drawXY(&g_sContext, vx, vy);
 
-        if (Joystick_isTappedToLeft(&hal_p->joystick))
+
+        if (vx < LEFT_THRESHOLD)//if joystick reaches threshold pushed to left turns true
         {
             joyStickPushedtoLeft = true;
         }
-        if (Joystick_isTappedToRight(&hal_p->joystick))//added this for right threshold
+
+        if (vx > RIGHT_THRESHOLD)////if joystick reaches threshold pushed to right turns true
               {
                   joyStickPushedtoRight = true;
               }
-        if (Joystick_isTappedToUp(&hal_p->joystick))
+
+        if (vy > UP_THRESHOLD)///if joystick reaches threshold pushed to Up turns true
                 {
                     joyStickPushedtoUp = true;
                 }
-        if (Joystick_isTappedToDown(&hal_p->joystick))//added this for right threshold
+
+        if (vy < DOWN_THRESHOLD)///if joystick reaches threshold pushed to down turns true
           {
            joyStickPushedtoDown = true;
           }
-
         static unsigned int x = 63;
-          static unsigned int y = 63;
+        static unsigned int y = 63;
 
           static unsigned int moveCount = 0;
-          char string[4];
+       static int count3 = 9;
+       unsigned char lifeString[6];
        //////////////////clear previous circle instances
-          static int count3 = 9;
-                 unsigned char lifeString[6];
 
                Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
                Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//wipe previous flower circles drawn
 
-                 //Graphics_setForegroundColor(&app->gfx.context,colormix(r,g,b));
+
 
                Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
                Graphics_fillCircle(&app_p->gfx.context,  20, (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
@@ -460,7 +462,7 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
                           }
 
 ///////////////////////////////////////
-        MoveCircle(&g_sContext,joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoUp,joyStickPushedtoDown,&hal_p->gfx);
+    //    MoveCircle(&g_sContext,joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoUp,joyStickPushedtoDown,&hal_p->gfx);
 
         Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_PINK );
         Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//flower
@@ -474,7 +476,39 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
         Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_GREEN );//flower and pollen
         Graphics_fillCircle(&app_p->gfx.context,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);
 
+////////////////////////////Yellow circle movement
 
+
+               if ((joyStickPushedtoLeft && (x>20)) || (joyStickPushedtoRight && (x<110))||(joyStickPushedtoDown && (y<75)) || (joyStickPushedtoUp && (y>45)))
+               {
+
+                   Graphics_setForegroundColor(&app_p->gfx.context, GRAPHICS_COLOR_BLUE);
+
+                   Graphics_fillCircle(&app_p->gfx.context, x, y, 10);//get rid of previous circle
+
+                   if (joyStickPushedtoLeft)//if boolean movetoleft is true
+                       x = x-10;
+
+                   if(joyStickPushedtoRight)//if boolean movetoright is true
+                       x = x+10;
+
+                   if (joyStickPushedtoDown)//if boolean movetodown is true
+                      y = y+10;
+
+                   if(joyStickPushedtoUp)//if boolean movetoup is true
+                      y = y-10;
+
+                   Graphics_setForegroundColor(&app_p->gfx.context, GRAPHICS_COLOR_YELLOW);//draw new circle in new location
+                   Graphics_fillCircle(&app_p->gfx.context, x, y, 10);//draw new circle in new location
+
+                   moveCount++;
+                   static int count1 = 0;//displays moves done
+                   unsigned char MoveString[6];
+
+                   snprintf((char *) MoveString, 10, "Moves %d",count1++);
+                                    GFX_print(&app_p->gfx.context, (char*) MoveString, 12, 11);
+
+               }
 
 
      }
