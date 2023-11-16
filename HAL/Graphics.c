@@ -7,8 +7,12 @@
 
 #include <HAL/Graphics.h>
 
+#include <HAL/HAL.h>
+#include <HAL/Timer.h>
 
 
+#include <ti/grlib/grlib.h>
+#include "LcdDriver/Crystalfontz128x128_ST7735.h"
 
 GFX GFX_construct(uint32_t defaultForeground, uint32_t defaultBackground)
 {
@@ -79,7 +83,7 @@ void make_3digit_NumString(unsigned int num, char *string)
 }
 
 
-void MoveCircle(Graphics_Context *g_sContext_p, bool moveToLeft, bool moveToRight, bool moveToDown, bool moveToUp)
+void MoveCircle(Graphics_Context *g_sContext_p, bool joyStickPushedtoLeft, bool joyStickPushedtoRight, bool joyStickPushedtoUp, bool joyStickPushedtoDown,GFX* gfx_p)
 {
     static unsigned int x = 63;
     static unsigned int y = 63;
@@ -87,29 +91,36 @@ void MoveCircle(Graphics_Context *g_sContext_p, bool moveToLeft, bool moveToRigh
     static unsigned int moveCount = 0;
     char string[4];
 
-    if ((moveToLeft && (x>20)) || (moveToRight && (x<110))||(moveToDown && (y>40)) || (moveToUp && (y<90)))
-    {
 
-        Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
-        Graphics_fillCircle(g_sContext_p, x, y, 10);
+    if ((joyStickPushedtoLeft && (x>20)) || (joyStickPushedtoRight && (x<110))||(joyStickPushedtoDown && (y<75)) || (joyStickPushedtoUp && (y>45)))
+           {
 
-        if (moveToLeft)
-            x = x-10;
-        if(moveToRight)
-            x = x+10;
+               Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
 
-        if (moveToDown)
-           y = y+10;
-        if(moveToUp)
-           y = y-10;
+               Graphics_fillCircle(&gfx_p->context, x, y, 10);//get rid of previous circle
 
-        Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_YELLOW);
-        Graphics_fillCircle(g_sContext_p, x, y, 10);
+               if (joyStickPushedtoLeft)//if boolean movetoleft is true
+                   x = x-10;
 
-        moveCount++;
-        make_3digit_NumString(moveCount, string);
-        Graphics_drawString(g_sContext_p, (int8_t *) string, -1, 10, 110, true);
-    }
+               if(joyStickPushedtoRight)//if boolean movetoright is true
+                   x = x+10;
+
+               if (joyStickPushedtoDown)//if boolean movetodown is true
+                  y = y+10;
+
+               if(joyStickPushedtoUp)//if boolean movetoup is true
+                  y = y-10;
+
+               Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_YELLOW);//draw new circle in new location
+               Graphics_fillCircle(&gfx_p->context, x, y, 10);//draw new circle in new location
+
+               moveCount++;
+               static int count1 = 0;//displays moves done
+               unsigned char MoveString[6];
+
+               snprintf((char *) MoveString, 10, "Moves %d",count1++);
+                                GFX_print(gfx_p, (char*) MoveString, 12, 11);
+           }
 
 }
 void InitFonts() {

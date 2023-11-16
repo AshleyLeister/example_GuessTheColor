@@ -113,6 +113,21 @@ App_GuessTheColor App_GuessTheColor_construct(HAL* hal_p)
 
     app.randomNumberChoice = 0;
 
+
+
+
+    app.frameIndex = 0;//index for pollen
+        app.frameOffset = 60;
+
+
+        app.frameIndexx = 0;//index for flowers w pollen
+        app.frameOffsetx = 40;
+
+        app.frameIndexf = 0;//index for flowers
+            app.frameOffsetf = 20;
+
+        app.gfx = GFX_construct(GRAPHICS_COLOR_WHITE, GRAPHICS_COLOR_BLACK);
+
     // Initialization of FSM variables
     app.state = TITLE_SCREEN;
     app.timer = SWTimer_construct(TITLE_SCREEN_WAIT);
@@ -138,9 +153,9 @@ return((r&0xff)<<16)|((g&0xff)<<8)|(b& 0xff);
 void App_GuessTheColor_loop(App_GuessTheColor* app_p, HAL* hal_p)
 {
 
-if (Joystick_isTappedToLeft(&hal_p->joystick))
+if (Joystick_isTappedToLeft(&hal_p->joystick)){
 LED_toggle(&hal_p->boosterpackBlue);
-
+}
 //(hal_p->joystick.x<3000)
  //   LED_turnOn(&hal_p->boosterpackGreen)
 
@@ -346,208 +361,127 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
         // If B2 is pressed, increment the cursor and circle it around to 0 if it
         // reaches the bottom
 
-while (1){
-        Graphics_Context g_sContext;
-
-            // using static variable
-            static bool pause = false;
-            unsigned int r, g, b;
-            unsigned vx, vy;
 
 
-            getSampleJoyStick(&vx, &vy);//gets x and y values of joystick
-            drawXY(&g_sContext, vx, vy);//draws the x and y values of the joystick
+    Graphics_Context g_sContext;
 
+    initialize();
+    InitGraphics(&g_sContext);
+    draw_Base(&g_sContext);
 
-                r = 25;
-                g = app_p->frameIndex*2;
-                b = 254 - g;
+    unsigned vx, vy;
 
-                static int count3 = 9;
-                unsigned char lifeString[6];
+    while (1)
+    {
 
-              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
-              Graphics_fillCircle(&g_sContext,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//wipe previous flower circles drawn
+        getSampleJoyStick(&vx, &vy);
+        bool joyStickPushedtoRight = false;
+        bool joyStickPushedtoLeft = false;
+        bool joyStickPushedtoUp = false;//added these
+        bool joyStickPushedtoDown = false;
 
-                //Graphics_setForegroundColor(&g_sContext,colormix(r,g,b));
+        drawXY(&g_sContext, vx, vy);
 
-              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
-              Graphics_fillCircle(&g_sContext,  20, (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
-
-              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
-              Graphics_fillCircle(&g_sContext,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);//wipe previous pollen+flower circles
-
-              Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_BLUE );
-              Graphics_fillCircle(&g_sContext,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);//wipe previous pollen+flower circles
-               //  Graphics_setForegroundColor(&g_sContext,colormix(r,g,b));
-
-                app_p->frameIndex++;//adds one to frame index
-                app_p->frameIndexx++;
-                app_p->frameIndexf++;
-
-
-
-                if (app_p->frameIndex==90)//pollen index
+        if (Joystick_isTappedToLeft(&hal_p->joystick))
+        {
+            joyStickPushedtoLeft = true;
+        }
+        if (Joystick_isTappedToRight(&hal_p->joystick))//added this for right threshold
+              {
+                  joyStickPushedtoRight = true;
+              }
+        if (Joystick_isTappedToUp(&hal_p->joystick))
                 {
-                    app_p->frameIndex = 0;
-                    app_p->frameOffset++;
-
-                    if (app_p->frameOffset==90)
-                        app_p->frameOffset = 60;
-
-
-
-
-
+                    joyStickPushedtoUp = true;
                 }
+        if (Joystick_isTappedToDown(&hal_p->joystick))//added this for right threshold
+          {
+           joyStickPushedtoDown = true;
+          }
 
-                if (app_p->frameIndexx==90)//index for flower with pollen
-                {
-                    app_p->frameIndexx = 0;
-                    app_p->frameOffsetx++;
+        static unsigned int x = 63;
+          static unsigned int y = 63;
 
-                    if (app_p->frameOffsetx==90)
-                        app_p->frameOffsetx = 40;
+          static unsigned int moveCount = 0;
+          char string[4];
+       //////////////////clear previous circle instances
+          static int count3 = 9;
+                 unsigned char lifeString[6];
 
+               Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
+               Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//wipe previous flower circles drawn
 
+                 //Graphics_setForegroundColor(&app->gfx.context,colormix(r,g,b));
 
+               Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
+               Graphics_fillCircle(&app_p->gfx.context,  20, (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
 
+               Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
+               Graphics_fillCircle(&app_p->gfx.context,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);//wipe previous pollen+flower circles
 
-                }
-                if (app_p->frameIndexf==90)//index for flower
+               Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
+               Graphics_fillCircle(&app_p->gfx.context,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);//wipe previous pollen+flower circles
+
+               ///////////////////////////////adds one to frame index for each new cycle
+               app_p->frameIndex++;
+               app_p->frameIndexx++;
+               app_p->frameIndexf++;
+
+          /////////////////makes circles go back to the top once they reach the bottom
+               if (app_p->frameIndex==90)//pollen index
                      {
-                         app_p->frameIndexf = 0;
-                         app_p->frameOffsetf++;
+                         app_p->frameIndex = 0;
+                         app_p->frameOffset++;
 
-                         if (app_p->frameOffsetf==90)
-                             app_p->frameOffsetf = 20;
-
-
-
-                         snprintf((char *) lifeString, 10, "life %d",count3--);
-                         GFX_print(&g_sContext, (char*) lifeString, 13, 11);
-
-
+                         if (app_p->frameOffset==90)
+                             app_p->frameOffset = 60;
                      }
 
+                     if (app_p->frameIndexx==90)//index for flower with pollen
+                     {
+                         app_p->frameIndexx = 0;
+                         app_p->frameOffsetx++;
+
+                         if (app_p->frameOffsetx==90)
+                             app_p->frameOffsetx = 40;
+                     }
+                     if (app_p->frameIndexf==90)//index for flower
+                          {
+                              app_p->frameIndexf = 0;
+                              app_p->frameOffsetf++;
+
+                          if (app_p->frameOffsetf==90)
+                              app_p->frameOffsetf = 20;
+
+                              snprintf((char *) lifeString, 10, "life %d",count3--);//subtract from life if flower unpollinated touches gorund
+                              GFX_print(&app_p->gfx.context, (char*) lifeString, 13, 11);
 
 
+                          }
 
-                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_PINK );
-                Graphics_fillCircle(&g_sContext,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//flower
+///////////////////////////////////////
+        MoveCircle(&g_sContext,joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoUp,joyStickPushedtoDown,&hal_p->gfx);
 
-                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_GREEN );
-                Graphics_fillCircle(&g_sContext,  20, (app_p->frameIndex + app_p->frameOffset)%90, 2);//pollen
+        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_PINK );
+        Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//flower
 
-
-                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_PINK);//flower and pollen
-                Graphics_fillCircle(&g_sContext,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);
-                Graphics_setForegroundColor(&g_sContext,GRAPHICS_COLOR_GREEN );//flower and pollen
-                Graphics_fillCircle(&g_sContext,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);
-                ///////////////////////////////////////////// joystick controls
-
-                bool joyStickPushedtoRight = false;////boolean for each type of joystick position
-                bool joyStickPushedtoLeft = false;
-                bool joyStickPushedtoUp = false;
-                bool joyStickPushedtoDown = false;
+        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_GREEN );
+        Graphics_fillCircle(&app_p->gfx.context,  20, (app_p->frameIndex + app_p->frameOffset)%90, 2);//pollen
 
 
-                if (vx < LEFT_THRESHOLD)//if joystick reaches threshold pushed to left turns true
-                {
-                    joyStickPushedtoLeft = true;
-                }
-
-                if (vx > RIGHT_THRESHOLD)////if joystick reaches threshold pushed to right turns true
-                      {
-                          joyStickPushedtoRight = true;
-                      }
-
-                if (vy > UP_THRESHOLD)///if joystick reaches threshold pushed to Up turns true
-                        {
-                            joyStickPushedtoUp = true;
-                        }
-
-                if (vy < DOWN_THRESHOLD)///if joystick reaches threshold pushed to down turns true
-                  {
-                   joyStickPushedtoDown = true;
-                  }
-
-              /// MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoDown,joyStickPushedtoUp,&app);//old circle is removed and new circle is drawn
-         ////////////////////////////////////move circle code this section causes application loop to end??????
-                static unsigned int x = 63;
-                static unsigned int y = 63;
-
-                static unsigned int moveCount = 0;
-                static unsigned int pollenCount = 0;
+        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_PINK);//flower and pollen
+        Graphics_fillCircle(&app_p->gfx.context,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);
+        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_GREEN );//flower and pollen
+        Graphics_fillCircle(&app_p->gfx.context,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);
 
 
 
 
-                char string[4];
-
-                if ((joyStickPushedtoLeft && (x>20)) || (joyStickPushedtoRight && (x<110))||(joyStickPushedtoDown && (y<75)) || (joyStickPushedtoUp && (y>45)))
-                {
-
-                    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_BLUE);
-
-                    Graphics_fillCircle(&g_sContext, x, y, 10);//get rid of previous circle
-
-                    if (joyStickPushedtoLeft)//if boolean movetoleft is true
-                        x = x-10;
-
-                    if(joyStickPushedtoRight)//if boolean movetoright is true
-                        x = x+10;
-
-                    if (joyStickPushedtoDown)//if boolean movetodown is true
-                       y = y+10;
-
-                    if(joyStickPushedtoUp)//if boolean movetoup is true
-                       y = y-10;
-
-                    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_YELLOW);//draw new circle in new location
-                    Graphics_fillCircle(&g_sContext, x, y, 10);//draw new circle in new location
-
-                    moveCount++;
-                    static int count1 = 0;//displays moves done
-                    unsigned char MoveString[6];
+     }
 
 
 
 
-
-                    snprintf((char *) MoveString, 10, "Moves %d",count1++);
-                                     GFX_print(&g_sContext, (char*) MoveString, 12, 11);
-
-                }
-                static int score = 0;//displays moves done
-                                             unsigned char ScoreString[6];
-                                             static int count2 = 0;//displays moves done
-                                                                              unsigned char PollenString[8];
-                    if (((app_p->frameIndex + app_p->frameOffset)>=y) && ((x<25) && (x>20)))//if bee touches pollen
-
-
-                        snprintf((char *) PollenString, 10, "Pollen %d",count2++);
-                         GFX_print(&g_sContext, (char*) PollenString, 14, 11);
-
-
-
-
-                    if (((app_p->frameIndexx + app_p->frameOffsetx)>=y) && ((x<105) && (x>95)))//if bee touches flowers with pollen
-
-
-                               snprintf((char *) ScoreString, 10, "Score %d",score++);
-                                GFX_print(&g_sContext, (char*) ScoreString, 15, 11);
-
-
-                                if (((app_p->frameIndexf + app_p->frameOffsetf)>=y) && ((x<75) && (x>68)))//if bee touches flowers with no pollen
-
-
-                                            snprintf((char *) PollenString, 10, "Pollen %d",count2--);//subtract 1 from pollen score
-                                             GFX_print(&g_sContext, (char*) PollenString, 14, 11);
-
-
-
-}
 
 }
 
@@ -616,7 +550,6 @@ void App_GuessTheColor_showInstructionsScreen(App_GuessTheColor* app_p, GFX* gfx
  */
 void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p,HAL* hal_p)
 {
-    // Clear the screen from any old text state
     GFX_clear(gfx_p);
 
     // Display the text
@@ -632,7 +565,6 @@ void App_GuessTheColor_showPlayScreen(App_GuessTheColor* app_p, GFX* gfx_p,HAL* 
     if (app_p->redSelected  ) { GFX_print(gfx_p, "*", 2, 8); }
     if (app_p->greenSelected) { GFX_print(gfx_p, "*", 3, 8); }
     if (app_p->blueSelected ) { GFX_print(gfx_p, "*", 4, 8); }
-
 
 
 
