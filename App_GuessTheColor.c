@@ -114,17 +114,24 @@ App_GuessTheColor App_GuessTheColor_construct(HAL* hal_p)
     app.randomNumberChoice = 0;
 
 
+        app.frameIndex = 0;//index for pollen y value
+        app.frame2Index = 0;//index for pollen2 y value
 
-
-    app.frameIndex = 0;//index for pollen
         app.frameOffset = 60;
+        app.frame2Offset = 50;
 
+        app.xframeIndex = 20;//index or pollen1 x value
+        app.xframe2Index = 90;//index for pollen2 x value
+        app.xframe3Index = 10;//index for pollen3 x value
+
+        app.xflowerVal = 50;//index for pollen1 x value
+        app.xflower2Val = 70;//index for pollen2 x value
 
         app.frameIndexx = 0;//index for flowers w pollen
         app.frameOffsetx = 40;
 
         app.frameIndexf = 0;//index for flowers
-            app.frameOffsetf = 20;
+        app.frameOffsetf = 20;
 
         app.gfx = GFX_construct(GRAPHICS_COLOR_WHITE, GRAPHICS_COLOR_BLACK);
 
@@ -198,11 +205,11 @@ void App_GuessTheColor_showTitleScreen(GFX* gfx_p)
     GFX_clear(gfx_p);
 
 
-    GFX_print(gfx_p, "HW 9  Game  ", 0, 0);
+    GFX_print(gfx_p, "Bee  Game  ", 0, 0);
     GFX_print(gfx_p, "---------------------", 1, 0);
     GFX_print(gfx_p, "By: Ashley Leister", 2, 0);
-    GFX_print(gfx_p, "Press any key on ", 3, 0);
-    GFX_print(gfx_p, "Mobaxterm to start", 3, 0);
+    GFX_print(gfx_p, " ", 3, 0);
+    GFX_print(gfx_p, "Wait to start", 3, 0);
 }
 
 /**
@@ -356,29 +363,21 @@ void App_GuessTheColor_handleGameScreen(App_GuessTheColor* app_p, HAL* hal_p)
 }
 void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
 {
-
-    // check the inputs
-        // If B2 is pressed, increment the cursor and circle it around to 0 if it
-        // reaches the bottom
-
-
-
     Graphics_Context g_sContext;
-
     initialize();
     InitGraphics(&g_sContext);
     draw_Base(&g_sContext);
-
     unsigned vx, vy;
 
-    while (1)
-    {
 
+while(1){
         getSampleJoyStick(&vx, &vy);
         bool joyStickPushedtoRight = false;
         bool joyStickPushedtoLeft = false;
         bool joyStickPushedtoUp = false;//added these
         bool joyStickPushedtoDown = false;
+
+
 
         drawXY(&g_sContext, vx, vy);
 
@@ -406,51 +405,66 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
         static unsigned int y = 63;
 
           static unsigned int moveCount = 0;
-       static int count3 = 9;
+       static int count3 = 3;////player starts with three life
        unsigned char lifeString[6];
-       //////////////////clear previous circle instances
+
+       //////////////////clear previous pollen/flowers
 
                Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
-               Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//wipe previous flower circles drawn
 
+               Graphics_fillCircle(&app_p->gfx.context, (app_p->xflower2Val)%110 , (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//wipe previous flower circles drawn
+               Graphics_fillCircle(&app_p->gfx.context, (app_p->xflowerVal)%110 , (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//wipe previous flower circles drawn
 
-
-               Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
-               Graphics_fillCircle(&app_p->gfx.context,  20, (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
-
-               Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
-               Graphics_fillCircle(&app_p->gfx.context,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);//wipe previous pollen+flower circles
-
-               Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
-               Graphics_fillCircle(&app_p->gfx.context,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);//wipe previous pollen+flower circles
+               Graphics_fillCircle(&app_p->gfx.context,  (app_p->xframeIndex)%110, (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
+               Graphics_fillCircle(&app_p->gfx.context,  (app_p->xframe2Index)%110, (app_p->frame2Index + app_p->frame2Offset)%90,2);//wipe previous pollen circles
+               Graphics_fillCircle(&app_p->gfx.context,  (app_p->xframe3Index)%110, (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
 
                ///////////////////////////////adds one to frame index for each new cycle
                app_p->frameIndex++;
+               app_p->frame2Index++;
+
                app_p->frameIndexx++;
                app_p->frameIndexf++;
+
 
           /////////////////makes circles go back to the top once they reach the bottom
                if (app_p->frameIndex==90)//pollen index
                      {
                          app_p->frameIndex = 0;
                          app_p->frameOffset++;
+                         app_p->xframeIndex=app_p->xframeIndex+10;
 
-                         if (app_p->frameOffset==90)
+                         if (app_p->frameOffset==90){
+
+
                              app_p->frameOffset = 60;
+
+                         }
                      }
 
-                     if (app_p->frameIndexx==90)//index for flower with pollen
-                     {
-                         app_p->frameIndexx = 0;
-                         app_p->frameOffsetx++;
 
-                         if (app_p->frameOffsetx==90)
-                             app_p->frameOffsetx = 40;
-                     }
+
+               if (app_p->frame2Index==90)//pollen 2 index
+                            {
+                                app_p->frame2Index = 0;
+                                app_p->frame2Offset++;
+                                app_p->xframe2Index=app_p->xframe2Index+20;
+
+                                if (app_p->frame2Offset==90){
+
+
+                                    app_p->frame2Offset = 50;
+
+                                }
+                            }
+
+
+
                      if (app_p->frameIndexf==90)//index for flower
                           {
                               app_p->frameIndexf = 0;
                               app_p->frameOffsetf++;
+                              app_p->xflowerVal=app_p->xflowerVal+40;
 
                           if (app_p->frameOffsetf==90)
                               app_p->frameOffsetf = 20;
@@ -461,20 +475,24 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
 
                           }
 
-///////////////////////////////////////
+/////////////////////////////////////// Draw flowers, pollen
+
+
     //    MoveCircle(&g_sContext,joyStickPushedtoLeft,joyStickPushedtoRight,joyStickPushedtoUp,joyStickPushedtoDown,&hal_p->gfx);
 
         Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_PINK );
-        Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//flower
 
-        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_GREEN );
-        Graphics_fillCircle(&app_p->gfx.context,  20, (app_p->frameIndex + app_p->frameOffset)%90, 2);//pollen
+        Graphics_fillCircle(&app_p->gfx.context, (app_p->xflower2Val)%110 , (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);//draw these flowers
+        Graphics_fillCircle(&app_p->gfx.context, (app_p->xflowerVal)%110 , (app_p->frameIndexf + app_p->frameOffsetf)%90, 5);
+
+        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_LIME);//draw pollen
+
+        Graphics_fillCircle(&app_p->gfx.context,  (app_p->xframeIndex%110), (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
+        Graphics_fillCircle(&app_p->gfx.context,  (app_p->xframe2Index%110), (app_p->frame2Index + app_p->frame2Offset)%90,2);//wipe previous pollen circles
+        Graphics_fillCircle(&app_p->gfx.context,  (app_p->xframe3Index%110), (app_p->frameIndex + app_p->frameOffset)%90,2);//wipe previous pollen circles
 
 
-        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_PINK);//flower and pollen
-        Graphics_fillCircle(&app_p->gfx.context,  101, (app_p->frameIndexx + app_p->frameOffsetx)%90, 5);
-        Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_GREEN );//flower and pollen
-        Graphics_fillCircle(&app_p->gfx.context,  100, (app_p->frameIndexx + app_p->frameOffsetx)%90, 2);
+
 
 ////////////////////////////Yellow circle movement
 
@@ -484,7 +502,7 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
 
                    Graphics_setForegroundColor(&app_p->gfx.context, GRAPHICS_COLOR_BLUE);
 
-                   Graphics_fillCircle(&app_p->gfx.context, x, y, 10);//get rid of previous circle
+                   Graphics_fillCircle(&app_p->gfx.context, x, y, 6);//get rid of previous circle
 
                    if (joyStickPushedtoLeft)//if boolean movetoleft is true
                        x = x-10;
@@ -499,7 +517,7 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
                       y = y-10;
 
                    Graphics_setForegroundColor(&app_p->gfx.context, GRAPHICS_COLOR_YELLOW);//draw new circle in new location
-                   Graphics_fillCircle(&app_p->gfx.context, x, y, 10);//draw new circle in new location
+                   Graphics_fillCircle(&app_p->gfx.context, x, y, 6);//draw new circle in new location
 
                    moveCount++;
                    static int count1 = 0;//displays moves done
@@ -509,11 +527,46 @@ void App_GuessTheColor_handlePlayScreen(App_GuessTheColor* app_p, HAL* hal_p)
                                     GFX_print(&app_p->gfx.context, (char*) MoveString, 12, 11);
 
                }
+               static int count2 = 0;//displays moves done
+                                  unsigned char PollenString[6];
+
+                                  static int score = 0;//displays moves done
+                                                     unsigned char ScoreString[6];
+               if (((app_p->frameIndex + app_p->frameOffset)>=y) && ((x<app_p->xframeIndex)))//if bee touches pollen1
 
 
-     }
+                      snprintf((char *) PollenString, 10, "Pollen %d",count2++);
+                       GFX_print(&app_p->gfx.context, (char*) PollenString, 14, 11);
 
 
+
+
+                  if (((app_p->frameIndexx + app_p->frameOffsetx)>=y) && ((x<105) && (x>95)))//if bee touches flowers with pollen
+
+
+                             snprintf((char *) ScoreString, 10, "Score %d",score++);
+                              GFX_print(&app_p->gfx.context, (char*) ScoreString, 15, 11);
+
+
+                              if (((app_p->frameIndexf + app_p->frameOffsetf)>=y) && ((x<75) && (x>68)))//if bee touches flowers with no pollen
+
+
+
+                                                             Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_PINK );//change color to pink
+                                                             Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 3);//draws green circle represting pollen
+                                                         //    Graphics_drawRectangle(&app_p->gfx.context, &R);//draw rectangle
+                                                             Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
+
+                                          snprintf((char *) PollenString, 10, "Pollen %d",count2--);//subtract 1 from pollen score
+                                           GFX_print(&app_p->gfx.context, (char*) PollenString, 14, 11);
+////////////////////pollinate flower
+
+
+
+
+
+
+}
 
 
 
@@ -545,18 +598,7 @@ void App_GuessTheColor_handleResultScreen(App_GuessTheColor* app_p, HAL* hal_p)
 void App_GuessTheColor_showScoreScreen(App_GuessTheColor* app_p, GFX* gfx_p)
 {
     // Clear the screen from any old text state
-    GFX_clear(gfx_p);
 
-    // Display the text
-    GFX_print(gfx_p, "High Scores:         ", 0, 0);
-    GFX_print(gfx_p, "---------------------", 1, 0);
-    GFX_print(gfx_p, "1)  ", 2, 0);
-    GFX_print(gfx_p, "2) ", 3, 0);
-    GFX_print(gfx_p, "3) ", 4, 0);
-    GFX_print(gfx_p, "4)  ", 5, 0);
-    GFX_print(gfx_p, "5)  ", 6, 0);
-
-    GFX_print(gfx_p, "Press joystick to     ", 8, 0);
 
     GFX_print(gfx_p, "return to menu.  ", 9, 0);
 }
@@ -568,10 +610,10 @@ void App_GuessTheColor_showInstructionsScreen(App_GuessTheColor* app_p, GFX* gfx
     // Display the text
     GFX_print(gfx_p, "Instructions         ", 0, 0);
     GFX_print(gfx_p, "---------------------", 1, 0);
-    GFX_print(gfx_p, "Move Joystick to move.  ", 2, 0);
-    GFX_print(gfx_p, "Press joystick to ", 4, 0);
+    GFX_print(gfx_p, "Move Joystick to move bee.  ", 2, 0);
+    GFX_print(gfx_p, "Collect square pollen ", 4, 0);
 
-    GFX_print(gfx_p, "select option.  ", 5, 0);
+    GFX_print(gfx_p, " for points. ", 5, 0);
     GFX_print(gfx_p, "Press joystick to     ", 7, 0);
 
     GFX_print(gfx_p, "return to menu.  ", 8, 0);

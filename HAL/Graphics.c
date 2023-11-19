@@ -68,7 +68,7 @@ void draw_Base(Graphics_Context *g_sContext_p)
     R.yMax = 96;
 
     Graphics_drawRectangle(g_sContext_p, &R);
-    Graphics_fillCircle(g_sContext_p, 63, 63, 10);
+    Graphics_fillCircle(g_sContext_p, 63, 63, 6);
     Graphics_drawString(g_sContext_p, (int8_t *)"circle move #:", -1, 10, 100, false);
     Graphics_drawString(g_sContext_p, (int8_t *)"000", -1, 10, 110, true);
 }

@@ -60,8 +60,25 @@ struct _App_GuessTheColor
     ////////////////////////////////////////////////added these from HW10
     GFX gfx;  //gfx stands for grahics!!!
 
-    unsigned int frameIndex;
+    unsigned int frameIndex;//index for pollen y value
     unsigned int frameOffset;
+
+    unsigned int frame2Index;//index for pollen y value
+    unsigned int frame2Offset;
+
+
+
+    unsigned int xframeIndex;//index for pollen x value
+
+    unsigned int xframe2Index;//index for pollen2 x value
+
+    unsigned int xframe3Index;//index for pollen3 x value
+
+    unsigned int xflowerVal;//index for flower1 x val
+
+    unsigned int xflower2Val;//index for flower2 x val
+
+
 
     unsigned int frameIndexx;
      unsigned int frameOffsetx;
