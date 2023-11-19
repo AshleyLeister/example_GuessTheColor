@@ -401,8 +401,8 @@ while(1){
           {
            joyStickPushedtoDown = true;
           }
-        static unsigned int x = 63;
-        static unsigned int y = 63;
+        static unsigned int x = 62;
+        static unsigned int y = 62;
 
           static unsigned int moveCount = 0;
        static int count3 = 3;////player starts with three life
@@ -505,16 +505,16 @@ while(1){
                    Graphics_fillCircle(&app_p->gfx.context, x, y, 6);//get rid of previous circle
 
                    if (joyStickPushedtoLeft)//if boolean movetoleft is true
-                       x = x-10;
+                       x = x-2;
 
                    if(joyStickPushedtoRight)//if boolean movetoright is true
-                       x = x+10;
+                       x = x+2;
 
                    if (joyStickPushedtoDown)//if boolean movetodown is true
-                      y = y+10;
+                      y = y+2;
 
                    if(joyStickPushedtoUp)//if boolean movetoup is true
-                      y = y-10;
+                      y = y-2;
 
                    Graphics_setForegroundColor(&app_p->gfx.context, GRAPHICS_COLOR_YELLOW);//draw new circle in new location
                    Graphics_fillCircle(&app_p->gfx.context, x, y, 6);//draw new circle in new location
@@ -532,7 +532,7 @@ while(1){
 
                                   static int score = 0;//displays moves done
                                                      unsigned char ScoreString[6];
-               if (((app_p->frameIndex + app_p->frameOffset)>=y) && ((x<app_p->xframeIndex)))//if bee touches pollen1
+               if ((((app_p->frameIndex + app_p->frameOffset)>=y) && ((x<app_p->xframeIndex)))||(((app_p->frame2Index + app_p->frame2Offset)==y) && ((x==app_p->xframeIndex))))//if bee touches pollen1 or 2
 
 
                       snprintf((char *) PollenString, 10, "Pollen %d",count2++);
@@ -541,24 +541,24 @@ while(1){
 
 
 
-                  if (((app_p->frameIndexx + app_p->frameOffsetx)>=y) && ((x<105) && (x>95)))//if bee touches flowers with pollen
-
-
-                             snprintf((char *) ScoreString, 10, "Score %d",score++);
-                              GFX_print(&app_p->gfx.context, (char*) ScoreString, 15, 11);
-
-
-                              if (((app_p->frameIndexf + app_p->frameOffsetf)>=y) && ((x<75) && (x>68)))//if bee touches flowers with no pollen
 
 
 
-                                                             Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_PINK );//change color to pink
-                                                             Graphics_fillCircle(&app_p->gfx.context,  70, (app_p->frameIndexf + app_p->frameOffsetf)%90, 3);//draws green circle represting pollen
-                                                         //    Graphics_drawRectangle(&app_p->gfx.context, &R);//draw rectangle
-                                                             Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_BLUE );
+                              if (((app_p->frameIndexf + app_p->frameOffsetf)>=y) && (x== (app_p->xflowerVal)))//if bee touches flowers with no pollen
 
-                                          snprintf((char *) PollenString, 10, "Pollen %d",count2--);//subtract 1 from pollen score
-                                           GFX_print(&app_p->gfx.context, (char*) PollenString, 14, 11);
+
+
+                                                             Graphics_setForegroundColor(&app_p->gfx.context,GRAPHICS_COLOR_LIME);//change color to pink
+                                                             Graphics_fillCircle(&app_p->gfx.context,  (app_p->xflowerVal)%110, (app_p->frameIndexf + app_p->frameOffsetf)%90, 3);//draws green circle representing pollen
+
+
+
+                                                             snprintf((char *) ScoreString, 10, "Score %d",score+3);//add to score
+                                                              GFX_print(&app_p->gfx.context, (char*) ScoreString, 15, 11);
+
+
+                                                              snprintf((char *) PollenString, 10, "Pollen %d",count2--);//subtract 1 from pollen count
+                                                              GFX_print(&app_p->gfx.context, (char*) PollenString, 14, 11);
 ////////////////////pollinate flower
 
 
